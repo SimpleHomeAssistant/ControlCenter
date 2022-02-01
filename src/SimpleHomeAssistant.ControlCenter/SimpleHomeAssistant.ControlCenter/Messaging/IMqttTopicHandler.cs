@@ -5,7 +5,7 @@
         /// <summary>
         /// the interested MQTT topic
         /// </summary>
-        string Topic { get; set; }
+        string Topic { get; }
 
         /// <summary>
         /// handle and process the command
