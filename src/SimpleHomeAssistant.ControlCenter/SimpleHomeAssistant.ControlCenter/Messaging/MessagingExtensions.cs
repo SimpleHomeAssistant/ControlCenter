@@ -9,7 +9,7 @@ namespace SimpleHomeAssistant.ControlCenter.Messaging
     /// </summary>
     public static class MessagingExtensions
     {
-        public static IServiceCollection AddMqttTopicReceiver(this IServiceCollection services)
+        public static IServiceCollection AddMqttTopicReceiverAndHandlers(this IServiceCollection services)
         {
             services.AddSingleton<IMqttClient>(provider =>
             {
@@ -17,21 +17,18 @@ namespace SimpleHomeAssistant.ControlCenter.Messaging
                 return mqttFactory.CreateMqttClient();
             });
             services.AddSingleton<MqttTopicReceiver>();
+
+            services.AddSingleton<IMqttTopicHandler, VoiceActivityTopicHandler>();
+
             return services;
         }
 
-        public static WebApplication UseMqttTopicRecieverAndHandlers(this WebApplication app)
+        public static WebApplication UseMqttTopicReceiver(this WebApplication app)
         {
             var provider = app.Services.CreateScope().ServiceProvider;
-            var client = provider.GetRequiredService<IMqttClient>();
             var receiver = provider.GetRequiredService<MqttTopicReceiver>();
-            var config = app.Configuration;
+            receiver.Start();
 
-            // config client connection
-            var clientOptions = new MqttClientOptionsBuilder()
-                .WithTcpServer(config.GetValue<string>("MQTT:ServerAddress"), config.GetValue<int>("MQTT:ServerPort"))
-                .Build();
-            client.ConnectAsync(clientOptions);
             return app;
         }
     }
