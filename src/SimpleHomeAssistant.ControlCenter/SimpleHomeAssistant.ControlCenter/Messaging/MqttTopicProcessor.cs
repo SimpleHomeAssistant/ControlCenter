@@ -7,14 +7,14 @@ using MQTTnet.Client.Options;
 
 namespace SimpleHomeAssistant.ControlCenter.Messaging
 {
-    public class MqttTopicReceiver
+    public class MqttTopicProcessor
     {
         private IMqttClient _mqttClient;
         private IMqttClientOptions _mqttClientOptions;
         private IEnumerable<IMqttTopicHandler> _mqttHandlers;
         private ILogger _logger;
 
-        public MqttTopicReceiver(IOptions<TopicRecieverOptions> options, IEnumerable<IMqttTopicHandler> topicHandlers, ILogger<MqttTopicReceiver> logger)
+        public MqttTopicProcessor(IOptions<TopicRecieverOptions> options, IEnumerable<IMqttTopicHandler> topicHandlers, ILogger<MqttTopicProcessor> logger)
         {
             _logger = logger;
             _mqttHandlers = topicHandlers.ToList();
@@ -65,6 +65,16 @@ namespace SimpleHomeAssistant.ControlCenter.Messaging
         {
             _logger.LogInformation($"connecting MQTT.");
             _mqttClient.ConnectAsync(_mqttClientOptions);
+        }
+
+        public Task Publish(string topic, string payload, CancellationToken cancellationToken)
+        {
+            var message = new MqttApplicationMessageBuilder()
+                .WithTopic(topic)
+                .WithQualityOfServiceLevel(0)
+                .WithPayload(payload)
+                .Build();
+            return _mqttClient.PublishAsync(message, cancellationToken);
         }
     }
 }

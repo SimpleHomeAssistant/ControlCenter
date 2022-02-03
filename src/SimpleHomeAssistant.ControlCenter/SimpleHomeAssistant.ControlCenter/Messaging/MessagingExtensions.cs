@@ -16,7 +16,7 @@ namespace SimpleHomeAssistant.ControlCenter.Messaging
                 var mqttFactory = new MqttFactory();
                 return mqttFactory.CreateMqttClient();
             });
-            services.AddSingleton<MqttTopicReceiver>();
+            services.AddSingleton<MqttTopicProcessor>();
 
             services.AddSingleton<IMqttTopicHandler, VoiceActivityTopicHandler>();
 
@@ -26,7 +26,7 @@ namespace SimpleHomeAssistant.ControlCenter.Messaging
         public static WebApplication UseMqttTopicReceiver(this WebApplication app)
         {
             var provider = app.Services.CreateScope().ServiceProvider;
-            var receiver = provider.GetRequiredService<MqttTopicReceiver>();
+            var receiver = provider.GetRequiredService<MqttTopicProcessor>();
             receiver.Start();
 
             return app;
