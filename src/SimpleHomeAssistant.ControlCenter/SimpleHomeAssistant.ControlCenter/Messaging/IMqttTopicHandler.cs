@@ -13,6 +13,6 @@
         /// <param name="command">received MQTT topic</param>
         /// <param name="payload">payload</param>
         /// <returns></returns>
-        Task Handle(string topic, object payload);
+        Task Handle(string topic, byte[] payload);
     }
 }

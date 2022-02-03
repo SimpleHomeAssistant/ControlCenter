@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using MediatR;
+using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Connecting;
@@ -13,12 +14,13 @@ namespace SimpleHomeAssistant.ControlCenter.Messaging
         private IMqttClientOptions _mqttClientOptions;
         private IEnumerable<IMqttTopicHandler> _mqttHandlers;
         private ILogger _logger;
+        private readonly IMediator _mediator;
 
-        public MqttTopicProcessor(IOptions<TopicRecieverOptions> options, IEnumerable<IMqttTopicHandler> topicHandlers, ILogger<MqttTopicProcessor> logger)
+        public MqttTopicProcessor(IOptions<TopicRecieverOptions> options, IEnumerable<IMqttTopicHandler> topicHandlers, ILogger<MqttTopicProcessor> logger, IMediator mediator)
         {
             _logger = logger;
             _mqttHandlers = topicHandlers.ToList();
-
+            _mediator = mediator;
             var factory = new MqttFactory();
             _mqttClient = factory.CreateMqttClient();
             _mqttClientOptions = new MqttClientOptionsBuilder()
@@ -37,6 +39,15 @@ namespace SimpleHomeAssistant.ControlCenter.Messaging
         private async Task MqttApplicaionMessageReceivedHandler(MqttApplicationMessageReceivedEventArgs arg)
         {
             _logger.LogInformation($"MQTT message received:{arg.ApplicationMessage.Topic}");
+            var message = arg.ApplicationMessage;
+            foreach (var mqttTopicHandler in _mqttHandlers)
+            {
+                // todo support wildcard
+                if (mqttTopicHandler.Topic.Equals(message.Topic))
+                {
+                    var t = mqttTopicHandler.Handle(message.Topic, message.Payload);
+                }
+            }
         }
 
         private Task MqttDisconnectedHandler(MqttClientDisconnectedEventArgs arg)

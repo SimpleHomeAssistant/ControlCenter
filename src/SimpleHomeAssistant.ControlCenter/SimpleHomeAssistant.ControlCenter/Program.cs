@@ -1,3 +1,4 @@
+using MediatR;
 using SimpleHomeAssistant.ControlCenter.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Configuration.AddJsonFile("appsettings.json")
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddMqttTopicReceiverAndHandlers();
+builder.Services.AddMediatR(typeof(Program).Assembly);
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
